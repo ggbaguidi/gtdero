@@ -1,0 +1,78 @@
+# makefile.demand
+
+# Model and Training Settings
+MODEL_NAME=iTransformer
+TRAIN=0
+PRED=--do_predict
+ITR=1
+TARGET=--target 'Total Energy(kWh)'
+INVERSE=--inverse
+SL=672
+PL=96
+
+# Paths
+ROOT_PATH=./../../
+DATA_INPUT=data/input
+
+# Training (site1) Hyperparameters
+TRAIN_SEQ_LEN=96
+TRAIN_PRED_LEN=96
+TRAIN_ENC_IN=321
+TRAIN_DEC_IN=321
+TRAIN_C_OUT=321
+TRAIN_LR=0.001
+
+# Site Forecasting Hyperparameters (for sites other than site1)
+SITE_ENC_IN=137
+SITE_DEC_IN=137
+SITE_C_OUT=137
+SITE_LR=0.0005
+TOP_K=5
+
+# Shared Model Hyperparameters
+E_LAYERS=2
+D_LAYERS=2
+FACTOR=3
+D_MODEL=512
+D_FF=512
+
+all: run
+
+.PHONY: clean train sites run
+
+# Combined target: run both training and all sites
+run: sites
+
+# Site forecasting targets for sites 1-10
+sites: $(addprefix site_,1 2 3 4 5 6 7 8 9 10)
+
+# Use different input dimensions for site1 and the other sites
+site_%:
+	python -u run.py \
+		--task_name long_term_forecast \
+		--is_training $(TRAIN) \
+		--root_path $(ROOT_PATH) \
+		--data_path $(DATA_INPUT)/site$*/energy_consumption_v2.csv \
+		--model_id demand_s$*_$(SL)_$(PL) \
+		--model $(MODEL_NAME) \
+		--data Demand \
+		--features M \
+		--seq_len $(SL) \
+		--pred_len $(PL) \
+		--e_layers $(E_LAYERS) \
+		--d_layers $(D_LAYERS) \
+		--enc_in $(if $(filter $*,1),$(TRAIN_ENC_IN),$(SITE_ENC_IN)) \
+		--dec_in $(if $(filter $*,1),$(TRAIN_DEC_IN),$(SITE_DEC_IN)) \
+		--c_out $(if $(filter $*,1),$(TRAIN_C_OUT),$(SITE_C_OUT)) \
+		--des 'Exp' \
+		--d_model $(D_MODEL) \
+		--d_ff $(D_FF) \
+		--learning_rate $(SITE_LR) \
+		--top_k $(TOP_K) \
+		$(PRED) \
+		--itr $(ITR) \
+		$(TARGET) $(INVERSE)
+
+# Clean up generated files
+clean:
+	rm -rf checkpoints/* *results result*.txt

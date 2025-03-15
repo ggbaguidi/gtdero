@@ -1,0 +1,75 @@
+# makefile.solar
+
+# Model and Global Settings
+MODEL_NAME=iTransformer
+TRAIN=0
+PRED=--do_predict
+ITR=1
+_TARGET1='Energy Output(kWh)'
+TARGET=--target $(_TARGET1)
+_INVERSE=--inverse
+INVERSE=$(_INVERSE)
+SL=672
+PL=96
+
+# Paths
+# Paths
+ROOT_PATH=./../../
+DATA_INPUT=data/input
+
+# Training (site1) Hyperparameters
+TRAIN_SEQ_LEN=$(SL)
+TRAIN_PRED_LEN=$(PL)
+TRAIN_ENC_IN=137
+TRAIN_DEC_IN=137
+TRAIN_C_OUT=137
+TRAIN_LR=0.0005
+
+# Site Forecasting Hyperparameters (for sites other than site1)
+SITE_ENC_IN=137
+SITE_DEC_IN=137
+SITE_C_OUT=137
+SITE_LR=0.0005
+
+# Shared Model Hyperparameters
+E_LAYERS=2
+D_LAYERS=2
+D_MODEL=512
+D_FF=512
+
+all: run
+
+.PHONY: all clean run sites
+
+# Combined target: run all sites
+run: sites
+
+# Site forecasting targets for sites 1-10
+sites: $(addprefix site_,1 2 3 4 5 6 7 8 9 10)
+
+# Pattern rule for site_1 to site_10
+site_%:
+	python -u run.py \
+		--is_training $(TRAIN) \
+    --task_name long_term_forecast \
+		--root_path $(ROOT_PATH) \
+		--data_path $(DATA_INPUT)/site$*/solar_weather_data_v2.csv \
+		--model_id solar_s$*_$(SL)_$(PL) \
+		--model $(MODEL_NAME) \
+		--data Solar_v2 \
+		--features M \
+		--seq_len $(SL) \
+		--pred_len $(PL) \
+		--e_layers $(E_LAYERS) \
+		--enc_in $(SITE_ENC_IN) \
+		--dec_in $(SITE_DEC_IN) \
+		--c_out $(SITE_C_OUT) \
+		--des 'Exp' \
+		--d_model $(D_MODEL) \
+		--d_ff $(D_FF) \
+		--learning_rate $(SITE_LR) \
+		--itr $(ITR) \
+		$(PRED) $(TARGET) $(INVERSE)
+
+clean:
+	rm -rf checkpoints/* *results result*.txt
