@@ -2,20 +2,20 @@
 
 # Model and Global Settings
 MODEL_NAME=iTransformer
-TRAIN=0
+TRAIN=1
 PRED=--do_predict
 ITR=1
 _TARGET1='Energy Output(kWh)'
 TARGET=--target $(_TARGET1)
 _INVERSE=--inverse
 INVERSE=$(_INVERSE)
-SL=672
-PL=96
+SL=24
+PL=24
 
 # Paths
 # Paths
-ROOT_PATH=./../../
-DATA_INPUT=data/input
+ROOT_PATH=./
+DATA_INPUT=datasets/processed/input
 
 # Training (site1) Hyperparameters
 TRAIN_SEQ_LEN=$(SL)
@@ -53,7 +53,7 @@ site_%:
 		--is_training $(TRAIN) \
     --task_name long_term_forecast \
 		--root_path $(ROOT_PATH) \
-		--data_path $(DATA_INPUT)/site$*/solar_weather_data_v2.csv \
+		--data_path $(DATA_INPUT)/site$*/solar.csv \
 		--model_id solar_s$*_$(SL)_$(PL) \
 		--model $(MODEL_NAME) \
 		--data Solar_v2 \

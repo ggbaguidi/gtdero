@@ -49,7 +49,7 @@ class Dataset_Energy_Demand(Dataset):
         # df_raw.drop(columns=["Site Name"], inplace=True)
         cols = list(df_raw.columns)
         cols.remove(self.target)
-        date = 'date'
+        date = 'Datetime'
         if 'index' in cols:
             date = 'index'
         cols.remove(date)
@@ -155,7 +155,7 @@ class Dataset_Solar_Energy(Dataset):
         # df_raw.drop(columns=["Site Name"], inplace=True)
         cols = list(df_raw.columns)
         cols.remove(self.target)
-        date = 'date'
+        date = 'Datetime'
         if 'index' in cols:
             date = 'index'
         cols.remove(date)

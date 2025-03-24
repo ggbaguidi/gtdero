@@ -2,7 +2,7 @@
 
 # Model and Training Settings
 MODEL_NAME=iTransformer
-TRAIN=0
+TRAIN=1
 PRED=--do_predict
 ITR=1
 TARGET=--target 'Total Energy(kWh)'
@@ -11,12 +11,12 @@ SL=672
 PL=96
 
 # Paths
-ROOT_PATH=./../../
-DATA_INPUT=data/input
+ROOT_PATH=./
+DATA_INPUT=datasets/processed/input
 
 # Training (site1) Hyperparameters
-TRAIN_SEQ_LEN=96
-TRAIN_PRED_LEN=96
+TRAIN_SEQ_LEN=24
+TRAIN_PRED_LEN=24
 TRAIN_ENC_IN=321
 TRAIN_DEC_IN=321
 TRAIN_C_OUT=321
@@ -52,7 +52,7 @@ site_%:
 		--task_name long_term_forecast \
 		--is_training $(TRAIN) \
 		--root_path $(ROOT_PATH) \
-		--data_path $(DATA_INPUT)/site$*/energy_consumption_v2.csv \
+		--data_path $(DATA_INPUT)/site$*/demand.csv \
 		--model_id demand_s$*_$(SL)_$(PL) \
 		--model $(MODEL_NAME) \
 		--data Demand \
